@@ -30,6 +30,8 @@ class OutputFeedbackController(Controller):
         self, controller_type: str, gains: List[float], f_error: Callable, dt: float
     ):
         super().__init__(controller_type + "-OutputFeedbackController")
+        self.control_type = controller_type
+
         self.K = gains
         self.error_func = f_error
         self.dt = dt
@@ -44,15 +46,26 @@ class OutputFeedbackController(Controller):
         self.int_error: float = 0.0
 
     def compute_control(self, error: float) -> FloatArray:
+        kp, ki, kd = self.K
+
         self.error = error
 
-        self.int_error += self.error * self.dt
-        self.int_error = max(-200, min(self.int_error, 200))
-        der_error = (error - self.prev_error) / max(1e-5, self.dt)
+        if self.control_type == f"PID":
+            self.int_error += self.error * self.dt
+            self.int_error = max(-200, min(self.int_error, 200))
+            der_error = (self.error - self.prev_error) / max(1e-5, self.dt)
 
-        u_ = self.K[0] * error + self.K[1] * self.int_error + self.K[2] * der_error
+            u_ = kp * self.error + ki * self.int_error + kd * der_error
 
-        self.prev_error = error
+        elif self.control_type == "SMC":
+            der_error = (self.error - self.prev_error) / max(1e-5, self.dt)
+
+            lamda, K, phi = self.K
+
+            sigma = der_error + lamda * self.error
+            u_ = K * np.tanh(sigma / phi)
+
+        self.prev_error = self.error
 
         return u_
 

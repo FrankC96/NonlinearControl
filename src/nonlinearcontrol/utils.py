@@ -36,13 +36,23 @@ class HUD:
 
         self.font = pygame.font.SysFont(None, 24)
 
+    def precompute_reference(
+        self, max_time: float, fps: int, reference_generator
+    ) -> pygame.Surface:
+        path_surface = pygame.Surface((self.s_width, self.s_height), pygame.SRCALPHA)
+        for pt in reference_generator.orbit(max_time, fps):
+            pygame.draw.circle(path_surface, (255, 255, 0), pt[:2], 1)
+        return path_surface
+
     def blit_surface(self, surface: pygame.Surface):
         self.screen.blit(surface, (0, 0))
 
     def display_time(self, time: float):
-        time_text = self.font.render(f"Time: [{time}s]", True, (255, 255, 255))
+        time_text = self.font.render(f"Time: [{time:.2f}s]", True, (255, 255, 255))
         self.screen.blit(source=time_text, dest=(int(self.s_width * 0.9), 10))
 
     def display_timestep(self, act_fps: float):
-        dt_text = self.font.render(f"Timestep: [{act_fps}Hz]", True, (255, 255, 255))
+        dt_text = self.font.render(
+            f"Timestep: [{act_fps:.2f}Hz]", True, (255, 255, 255)
+        )
         self.screen.blit(source=dt_text, dest=(int(self.s_width * 0.9), 50))

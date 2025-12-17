@@ -79,16 +79,16 @@ def distance_to_target(
     robot_position: List[float], target_position: List[float]
 ) -> float:
     x, y, theta = robot_position
-    x_tar, y_tar, theta_tar = target_position
+    x_tar, y_tar = target_position
 
-    return np.sqrt((x_tar - x) ** 2 + (y_tar - y) ** 2)
+    return np.sqrt((x - x_tar) ** 2 + (y - y_tar) ** 2)
 
 
 def target_heading(robot_position: List[float], target_position: List[float]) -> float:
     x, y, theta = robot_position
-    x_tar, y_tar, theta_tar = target_position
+    x_tar, y_tar = target_position
 
-    return wrap(np.arctan2(y - y_tar, x - x_tar))
+    return wrap(np.arctan2(y_tar - y, x_tar - x) - theta)
 
 
 if __name__ == "__main__":
